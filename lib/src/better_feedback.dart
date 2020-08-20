@@ -13,6 +13,7 @@ class BetterFeedback extends StatefulWidget {
     this.backgroundColor,
     this.drawColors,
     this.translation,
+    this.wrapInsideMaterialApp = true,
   })  : assert(child != null),
         assert(onFeedback != null),
         super(key: key);
@@ -31,6 +32,9 @@ class BetterFeedback extends StatefulWidget {
 
   /// Optional translation for the feedback view, defaults to english.
   final FeedbackTranslation translation;
+
+  /// Optional boolean to wrap or not [child] inside a MaterialApp .
+  final bool wrapInsideMaterialApp;
 
   /// Call `BetterFeedback.of(context)` to get an instance of
   /// [FeedbackData] on which you can call `.show()` or `.hide()`
@@ -59,19 +63,25 @@ class _BetterFeedbackState extends State<BetterFeedback> {
 
   @override
   Widget build(BuildContext context) {
+    final FeedbackData feedbackData = FeedbackData(
+      controller: controller,
+      child: FeedbackWidget(
+        child: widget.child,
+        isFeedbackVisible: controller.isVisible,
+        onFeedbackSubmitted: widget.onFeedback,
+        backgroundColor: widget.backgroundColor,
+        drawColors: widget.drawColors,
+        translation: widget.translation ?? EnTranslation(),
+      ),
+    );
+
+    if (!widget.wrapInsideMaterialApp) {
+      return feedbackData;
+    }
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: FeedbackData(
-        controller: controller,
-        child: FeedbackWidget(
-          child: widget.child,
-          isFeedbackVisible: controller.isVisible,
-          onFeedbackSubmitted: widget.onFeedback,
-          backgroundColor: widget.backgroundColor,
-          drawColors: widget.drawColors,
-          translation: widget.translation ?? EnTranslation(),
-        ),
-      ),
+      home: feedbackData,
     );
   }
 
